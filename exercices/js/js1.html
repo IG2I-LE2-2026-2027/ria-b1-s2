@@ -1,34 +1,210 @@
 <script>
 
-function trace(s) {
-	// que fait cette fonction ?
-	window.console && console.log(s);
-}
+	function trace(s) {
+		// que fait cette fonction ?
+		window.console && console.log(s);
 
-function debug(s) {
-	// affiche un nombre de messages limité par un compteur
-	// affiche le compteur si s n'est pas fourni
-	// e.g. après 10 affichages, la fonction ne fait plus rien 
-	// comment remettre à 0 le compteur ?   
-}
+		// identique à
+		// if (window.console !== "undefined") {
+		// 	console.log(s);
+		// }
+	}
 
-function show(refOrId,display) {
-	// affiche l'élément dont la référence ou l'id est fourni
-	// le paramètre display doit valoir block par défaut
-}
+	var compteurDebug = 0;
+	var maxDebug = 5;
+	function debug(s) {
+		// affiche un nombre de messages limité par un compteur
+		// affiche le compteur si s n'est pas fourni
+		if (s == undefined) return compteurDebug;
+		if (compteurDebug++ < maxDebug) {
+			trace(s);
+		}
+		// e.g. après 10 affichages, la fonction ne fait plus rien 
+		// comment remettre à 0 le compteur ?   
+	}
 
-function hide(refOrId) {
-	// cache l'élément dont la référence ou l'id est fourni
-}
+	// // Test-Driven Development (TDD)
+	// debug("message1"); // message1
+	// debug("message2"); // message2
+	// debug("message3"); // message3
+	// debug("message4"); // message4
+	// debug("message5"); // message5
+	// trace(debug()); // value
 
-function html(refOrId, val) {
-	// affecte une valeur à l'élément dont la référence ou l'id est fourni; si val n'est pas fourni, on renvoie son contenu
-}
+	// compteurDebug = 0; // A éviter car cette variable peut être utilisé dans d'autres fonctions
+	// trace("Après remise à 0");
+	// trace(debug()); // value
+	// debug("message6");
 
-function val(refOrId, val) {
-	// affecte une valeur à l'élément dont la référence ou l'id est fourni; si val n'est pas fourni, on renvoie son contenu
-	// l'élément est un champ de formulaire
-	// la fonction doit pouvoir manipuler l'état des champs de type checkbox et radio 
-	
-}
+	// Explication des closures (fermetures)
+	// Fonction qui garde en mémoire les variables
+	// de l'endroit où elle est née, même lorsqu'elle
+	// se retrouve ailleurs.
+
+	function creerCompteur() {
+		let nombre = 0;
+
+		return function () {
+			nombre++;
+			trace(nombre);
+		};
+	}
+
+	// const monCompteur = creerCompteur();
+	// monCompteur(); //1
+	// monCompteur(); //2
+	// monCompteur(); //3
+
+
+	var debugVersion2 = (function () {
+		var compteur = 0;
+		var max = 5;
+
+		return function (message) {
+			if (compteur > max) return;
+
+			compteur++;
+			if (message == undefined) {
+				trace(compteur);
+			} else {
+				trace(message);
+			}
+		}
+	})();
+
+	// debugVersion2("message1"); // message1
+	// debugVersion2("message2"); // message2
+	// debugVersion2("message3"); // message3
+	// debugVersion2("message4"); // message4
+	// debugVersion2("message5"); // message5
+	// debugVersion2(); // value
+	// debugVersion2("message6");
+
+	// // // On ne peut pas modifier le compteur directement
+	// // // en faisant 
+	// debugVersion2.compteur = 0;
+	// debugVersion2(); // value
+	// debugVersion2("message7");
+
+	var debugVersion3 = (function (borneMax) {
+
+		var compteur = 0;
+		if (borneMax == undefined) borneMax = 5;
+
+		return {
+			trace: function (message) {
+				if (compteur++ < borneMax) {
+					trace(message);
+				}
+			},
+			reset: function () {
+				compteur = 0;
+			},
+			getCompteur: function () {
+				return compteur;
+			},
+			setCompteur: function (value) {
+				compteur = value;
+			}
+		};
+	})();
+
+	// debugVersion3.trace("message1"); // message1
+	// debugVersion3.trace("message2"); // message2
+	// debugVersion3.trace("message3"); // message3
+	// debugVersion3.trace("message4"); // message4
+	// debugVersion3.trace("message5"); // message5
+	// trace(debugVersion3.getCompteur()); // value
+	// debugVersion3.trace("message6"); // ne s'affiche pas
+
+	// debugVersion3.reset(); //compteur à 0
+	// trace(debugVersion3.getCompteur()); // value
+	// debugVersion3.setCompteur(15);
+	// trace(debugVersion3.getCompteur()); // value
+
+	// debugVersion3.setCompteur(3);
+	// trace(debugVersion3.getCompteur()); // value
+	// debugVersion3.trace("Hello");
+
+	function getElement(element) {
+		if (typeof element === "string") {
+			return document.getElementById(element);
+		}
+		return element;
+	}
+
+
+
+	function show(refOrId, display) {
+		// affiche l'élément dont la référence ou l'id est fourni
+		// le paramètre display doit valoir block par défaut
+
+		element = getElement(refOrId);
+
+		if (display == undefined) {
+			element.style.display = "block";
+		} else {
+			element.style.display = "";
+		}
+	}
+
+	function hide(refOrId) {
+		// cache l'élément dont la référence ou l'id est fourni
+
+		element = getElement(refOrId);
+
+		if (element) element.style.display = "none";
+	}
+
+	function html(refOrId, val) {
+		// affecte une valeur à l'élément dont la référence ou l'id est fourni; si val n'est pas fourni, on renvoie son contenu
+
+		element = getElement(refOrId);
+
+		if (!element) { return null; }
+
+		if (typeof val === "undefined") {
+			return element.innerHTML;
+		}
+
+		element.innerHTML = val;
+	}
+
+	function val(refOrId, val) {
+		// affecte une valeur à l'élément dont la référence ou l'id est fourni; si val n'est pas fourni, on renvoie son contenu
+		// l'élément est un champ de formulaire
+		// la fonction doit pouvoir manipuler l'état des champs de type checkbox et radio 
+
+		element = getElement(refOrId);
+
+		if (!element) { return null; }
+
+		if (typeof val === "undefined") {
+			return element.value;
+		}
+
+		element.value = val;
+
+	}
+
+	function check(refOrId, val) {
+		element = getElement(refOrId);
+
+		if (!element) { return null; }
+
+		if (typeof val === "undefined") {
+			return element.checked;
+		}
+
+		element.value = val;
+
+
+	}
+
 </script>
+
+<body>
+	<div id="madiv"> MaDiv </div>
+	<input id="nom" type="text" value="Paul" />
+	<input type="checkbox" id="accepte" />
+</body>
