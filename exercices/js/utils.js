@@ -137,7 +137,7 @@ function check(refOrId, val) {
         return element.checked;
     }
 
-    element.value = val;
+    element.checked = val;
 
 
 }
