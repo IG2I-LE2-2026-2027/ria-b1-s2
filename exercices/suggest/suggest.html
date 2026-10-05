@@ -44,51 +44,53 @@
             }
         }
     </script>
+
+
+
+    <style>
+        #conteneur {
+            position: relative;
+            display: inline;
+        }
+
+        #saisie {
+            width: 250px;
+            height: 30px;
+            padding-right: 20px;
+            outline: none;
+            border: 1px solid black;
+        }
+
+        #imgLoad {
+            position: absolute;
+            right: 7px;
+            top: 2px;
+            display: none;
+        }
+
+        #suggestions {
+            position: absolute;
+            border: 1px solid black;
+            border-top: 0;
+            padding: 0;
+            margin: 0;
+            left: 0;
+            width: 248px;
+            top: 25px;
+            display: none;
+        }
+
+        #suggestions li {
+            display: block;
+            padding: 3px;
+        }
+
+        #suggestions li:hover {
+            background-color: lightgrey;
+            cursor: pointer;
+        }
+    </style>
 </head>
-
-<style>
-    #conteneur {
-        position: relative;
-        display: inline;
-    }
-
-    #saisie {
-        width: 250px;
-        height: 30px;
-        padding-right: 20px;
-        outline: none;
-        border: 1px solid black;
-    }
-
-    #imgLoad {
-        position: absolute;
-        right: 7px;
-        top: 2px;
-        display: none;
-    }
-
-    #suggestions {
-        position: absolute;
-        border: 1px solid black;
-        border-top: 0;
-        padding: 0;
-        margin: 0;
-        left: 0;
-        width: 248px;
-        top: 25px;
-        display: none;
-    }
-
-    #suggestions li {
-        display: block;
-        padding: 3px;
-    }
-
-    #suggestions li:hover {
-        background-color: lightgrey;
-        cursor: pointer;
-    }
-</style>
 
 <body onkeyup="annuler(event);">
     Bienvenue sur W2 suggest
