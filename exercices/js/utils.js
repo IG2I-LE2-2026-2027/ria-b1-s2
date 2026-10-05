@@ -138,6 +138,6 @@ function check(refOrId, val) {
     }
 
     element.checked = val;
-
-
 }
+
+trace("Chargement des librairies utiles");

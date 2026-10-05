@@ -1,32 +1,144 @@
 <head>
+	<script src="utils.js"></script>
 
-<script>
+	<script>
 
-function boucle(iPeriode,fnCbTraitement,fnCbContinuer) {
-	// Objectif : déclencher un appel à la fonction fnCbTraitement
-	// toutes les iPeriode secondes, 
-	// tant que fnCbContinuer renvoie vrai
+		function boucle(iPeriode, fnCbTraitement, fnCbContinuer) {
+			// Objectif : déclencher un appel à la fonction fnCbTraitement
+			// toutes les iPeriode secondes, 
+			// tant que fnCbContinuer renvoie vrai
 
-	// fnCbTraitement est une fonction de rappel ("CALLBACK")
-	// elle sera appelée plus tard
-	// pour l'appeler, il suffit d'ajouter les parenthèses !
+			var rep = function () {
+				if ((fnCbContinuer == undefined) || fnCbContinuer()) {
 
-	// rendre le 3ème argument optionnel
+					// (fnCbContinuer == undefined) || fnCbContinuer() et non
+					//  fnCbContinuer() || (fnCbContinuer == undefined)
+					// car javascript évalue de la gauche vers la droite 
+					// dans le second cas il teste d'abord fnCbContinuer() qui renvoie une erreur disant que
+					// fnCbContinuer()  n'est pas une fonction donc une erreur se produit avant
+					// d'atteindre  (fnCbContinuer == undefined)
+					// avec || et &&, il faut toujours placé la condition de sécurité en premier
 
-}
-</script>
+					fnCbTraitement();
+					window.setTimeout(rep, iPeriode * 1000);
+					// * 1000 pour faire la conversion en seconde
+					// dans iPeriode * 1000 seconde exécute rep
+				}
+			}
+
+			rep(); // est une closure
+
+			// fnCbTraitement est une fonction de rappel ("CALLBACK")
+			// elle sera appelée plus tard
+			// pour l'appeler, il suffit d'ajouter les parenthèses !
+
+			// rendre le 3ème argument optionnel
+		}
+
+
+
+		/*
+		var compteur = 0;
+		function affichermessage() {
+			trace("monMessage" + compteur);
+		}
+
+		function continuer() {
+			if (compteur++ < 5) return true;
+			else return false;
+		} 
+
+		//boucle(1, affichermessage, continuer);
+		//toutes les secondes, exécuter affichermessage() tant que continuer() renvoie true
+
+		boucle(2, affichermessage); 
+		// et on ne fait pas affichermessage() avec avec les () c'est comme si on 
+		// appelait la fonction au lieu de la passer comme argument
+		*/
+
+		// comment faire si on décide de rendre plusieurs arguments optionnels ?
+		// ça deviendrait délicat à gérer
+
+		// On peut passer par les objets 
+		// un objet est une association nom: valeur - cela empêche les ambiguités
+
+		objectDefault = {
+			periode: 5,
+			traiter: function () { trace("traitement") },
+			continuer: function () { return true; }
+		}
+
+		function enrichir(objectDefault, objectModif) {
+			// renvoie un nouvel objet ayant complété les propriétés absentes de l'objet de configuration
+			// par les valeurs de l'objet par défaut
+
+			var objectFinal = {};
+
+			for (nomProp in objectDefault) {
+				if (objectModif[nomProp] != undefined)
+					objectFinal[nomProp] = objectModif[nomProp];
+				else
+					objectFinal[nomProp] = objectDefault[nomProp];
+			}
+
+			return objectFinal;
+		}
+
+		function boucleV2(objectConfig) {
+			// traiter les paramètres effectifs
+
+			/*
+			var objectReel = objectDefault;  
+			// ceci n'est pas une copie, c'est une prise de référence !! 
+			// qui revient à donner un second nom à l'espace mémoire objectDefault
+			// pour les objets, = ne duplique rien: il crée un second nom
+			// pour le meme objet en mémoire
+			
+			// on voudrait faire un clonage 
+			// il existe deux types de copies pour les objets:
+			// superficielle (shallow copy) et profonde (deep copy).
+			// const clone = Object.assign({}, original);
+			// superficiel 
+			// const clone = JSON.parse(JSON.stringify(original));
+			// superficiel 
+			// ne fonctionne pas avec les méthodes 
+			
+			// jQuery propose une méthode de clonage profond 
+			
+			if (oConfig.periode != undefined) objectReel.periode = oConfig.periode; 
+			if (oConfig.traiter != undefined) objectReel.traiter = oConfig.traiter; 
+			if (oConfig.continuer != undefined) objectReel.continuer = oConfig.continuer; 
+			
+			*/
+
+			var objectReel = enrichir(objectDefault, objectConfig);
+
+			// boucle utilisant les arguments
+			var rep = function () {
+				if (objectReel.continuer()) {
+					objectReel.traiter();
+					window.setTimeout(rep, objectReel.periode * 1000);
+				}
+			}
+			rep();
+
+		}
+
+		//boucleV2({}); // comportement par défaut
+
+		// boucleV2({periode: 1});
+
+		// boucleV2({ traiter: function() { trace("test2"); } });
+
+		boucleV2(
+			{
+				traiter: function () { trace("test2"); },
+				periode: 1
+			});
+	</script>
 </head>
+
 <body>
 
 
 </body>
-
-
-
-
-
-
-
-
-
-
