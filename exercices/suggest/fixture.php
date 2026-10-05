@@ -1,7 +1,7 @@
 <?php
-	sleep(2); // attendre 2s
+sleep(2); // attendre 2s
 ?>
-
-<li>Thibault</li>
-<li>Thimoth&eacute;e</li>
-<li>Thomas</li>
+<li>Patrice</li>
+<li>Patrick</li>
+<li>Paul</li>
+<li>Privael</li>

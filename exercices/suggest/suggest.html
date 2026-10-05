@@ -1,0 +1,101 @@
+<head>
+    <script src="../js/utils.js"></script>
+    <script src="js/ajax.js"></script>
+    <script>
+        // var lastContent = "";
+
+        function traitement(reponseServeur) {
+            html("suggestions", reponseServeur);
+            show("suggestions");
+            hide("imgLoad");
+        }
+
+        function saisir() {
+            // var contenu = val("saisie");
+            // if ((contenu != "") && (contenu != lastContent)) {
+            show("imgLoad");
+            hide("suggestions");
+            ajax({
+                // type: ,
+                url: "fixture.php",
+                // data: ,
+                callback: traitement
+            });
+            // }
+
+            // if (contenu = "")
+            //     hide("imgLoad");
+
+            // lastContent = contenu;
+
+        }
+
+        function choisir(contexte) {
+            // console.log(contexte.target);
+            val("saisie", html(contexte.target));
+            hide("suggestions");
+        }
+
+        function annuler(contexte) {
+            if (contexte.code == "Escape") {
+                val("saisie", "");
+                hide("imgLoad");
+                hide("suggestions");
+            }
+        }
+    </script>
+</head>
+
+<style>
+    #conteneur {
+        position: relative;
+        display: inline;
+    }
+
+    #saisie {
+        width: 250px;
+        height: 30px;
+        padding-right: 20px;
+        outline: none;
+        border: 1px solid black;
+    }
+
+    #imgLoad {
+        position: absolute;
+        right: 7px;
+        top: 2px;
+        display: none;
+    }
+
+    #suggestions {
+        position: absolute;
+        border: 1px solid black;
+        border-top: 0;
+        padding: 0;
+        margin: 0;
+        left: 0;
+        width: 248px;
+        top: 25px;
+        display: none;
+    }
+
+    #suggestions li {
+        display: block;
+        padding: 3px;
+    }
+
+    #suggestions li:hover {
+        background-color: lightgrey;
+        cursor: pointer;
+    }
+</style>
+
+<body onkeyup="annuler(event);">
+    Bienvenue sur W2 suggest
+    <div id="conteneur">
+        <input type="text" id="saisie" onkeyup="saisir();" />
+        <img src="ressources/ajaxLoader.gif" id="imgLoad" />
+        <ul id="suggestions" onclick="choisir(event);">
+        </ul>
+    </div>
+</body>
