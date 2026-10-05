@@ -1,52 +1,145 @@
+<script src="../js/utils.js"></script>
+
 <script type="text/javascript">
 
-var request = false;
+	var request = false;
 
-function envoiRequete(type,url,donnees,callback)
-{
-	request = new XMLHttpRequest(); 
+	function envoiRequete(type, url, donnees, callback) {
+		request = new XMLHttpRequest();
 
-	if (type=='GET') 
-	{
-		request.open("GET", url+"?"+donnees, true);
-		donnees=null;
+		if (type == 'GET') {
+			request.open("GET", url + "?" + donnees, true);
+			donnees = null;
+		}
+		else {
+			request.open("POST", url, true);
+			request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			request.setRequestHeader("Content-length", donnees.length);
+			request.setRequestHeader("Connection", "close");
+		}
+
+		request.onreadystatechange = callback;
+		request.send(donnees);
 	}
-	else 
-	{
-		request.open("POST", url, true);
-		request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-		request.setRequestHeader("Content-length", donnees.length);
-		request.setRequestHeader("Connection", "close");
+
+	function traiteReponse() {
+		//alert(request.readyState);	// à décommenter
+		if (request.readyState == 4) {
+			if (request.status == 200) {
+				reponse = request.responseText;
+				html("reponse", reponse);
+			}
+		}
 	}
 
-	request.onreadystatechange = callback;
-	request.send(donnees);
-}
-
-function traiteReponse()
-{
-	//alert(request.readyState);	// à décommenter
-	if (request.readyState == 4) 
-	{
-	    if (request.status == 200) 
-	    {
-			reponse = request.responseText;
-	    }
+	objectDefault = {
+		url: false,
+		type: "GET",
+		data: {},
+		callback: function (reponse) { trace(reponse); }
 	}
-} 
 
-function envoyer(refBtn)
-{
-	var refCle = document.getElementById("cle");
-	var type;
+	function enrichir(objectDefault, objectModif) {
+		// renvoie un nouvel objet ayant complété les propriétés absentes de l'objet de configuration
+		// par les valeurs de l'objet par défaut
+		var objectFinal = {};
 
-}
+		for (nomProp in objectDefault) {
+			if (objectModif[nomProp] != undefined)
+				objectFinal[nomProp] = objectModif[nomProp];
+			else
+				objectFinal[nomProp] = objectDefault[nomProp];
+		}
+
+		return objectFinal;
+	}
+
+	function ajax(strOrObject, objectParams) {
+		var config;
+		var donnees = "";
+		var response;
+
+		//traitement des arguments
+		if (strOrObject == undefined)
+			trace("Il faut au moins un argument");
+
+		if (typeof strOrObject == "string") {
+			// strOrObject est forcément juste l'URL
+			// objectParams n'existe pas focément
+			// creer l'objet de configuration
+			config = enrichir(objectDefault, objectParams);
+			config.url = strOrObject;
+		} else {
+			// creer l'objet de configuration
+			config = enrichir(objectDefault, strOrObject);
+		}
+
+		// Controler la présence de l'URL dans l'objet de configuration
+		if (!config.url) {
+			trace("URL absente");
+		}
+
+		// traiter les données
+		for (nomCle in config.data) {
+			donnees += nomCle + "=" + config.data[nomCle] + "&";
+			// REMARQUE : un '&' traine à la fin 
+		}
+
+		request = new XMLHttpRequest();
+
+		if (config.type == "GET") {
+			request.open("GET", config.url + "?" + donnees, true);
+			donnees = null;
+		} else {
+			request.open("POST", config.url, true);
+			request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		}
+
+		request.onreadystatechange = function () {
+			var reponse;
+			if (request.readyState == 4) {
+				if (request.status == 200) {
+					reponse = request.responseText;
+					config.callback(reponse);
+				}
+			}
+		};
+
+		// Appeler request.open puis request.send
+		request.send(donnees);
+	}
+
+	function envoyer(refBtn) {
+		var refCle = document.getElementById("cle");
+		var type;
+
+		// envoiRequete(type, "A2_data.php", "cle="+val("cle"), traiteReponse);
+
+		// Utilisation la version rendant l'URL oblgatoire
+		// ajax("A2_data.php", {
+		// 	type: (val(refBtn) == "envoi GET") ? "GET" : "POST",
+		// 	data: { cle: val("cle") },
+		// 	callback: function (reponseDuServeur) {
+		// 		html("reponse", reponseDuServeur);
+		// 	}
+		// });
+
+		// Utilisation de la version ne rendant pas l'URL obligatoire
+		ajax({
+			url: "A2_data.php",
+			type: (val(refBtn) == "envoi GET") ? "GET" : "POST",
+			data: { cle: val("cle") },
+			callback: function (reponseDuServeur) {
+				html("reponse", reponseDuServeur);
+			}
+		});
+	}
 
 </script>
 
-<input type="text" id="cle"/>
-<input type="button" value="envoi GET"/>
-<input type="button" value="envoi POST"/>
+<input type="text" id="cle" />
+<input type="button" value="envoi GET" onclick="envoyer(this)" />
+<input type="button" value="envoi POST" onclick="envoyer(this)" />
 
 <div id="reponse">
 </div>
@@ -54,21 +147,3 @@ function envoyer(refBtn)
 <textarea cols="40" rows="10">
 Pour vous convaincre que c'est bien asynchrone, vous pouvez editer ce champ: il ne sera pas remis &agrave; jour !
 </textarea>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
