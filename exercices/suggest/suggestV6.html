@@ -1,0 +1,156 @@
+<!-- Version 6: Couche d'informations effectives 
+Flux fournit par une lecture de la base de données
+Mise en cache coté client afin de limiter la charge du réseau
+On doit s'assurer à présent de ne plus solliciter le serveur puisque les
+suggestions sont déjà stockées dans le cache.
+-->
+
+<head>
+    <script src="../js/utils.js"></script>
+    <script src="js/ajax.js"></script>
+    <script>
+        var cache = {
+            currentSuggestions: [],
+            lastRequests: {}
+        };
+
+        function traitement(reponseServeur) {
+            var i;
+            // Les donnéess sont au format JSON
+            // Il faut les parcourir pour les afficher
+
+            // console.log(typeof(reponseServeur));
+            // Le navigateur reçoit une chaine de caractères qu'il ne sait pas traiter
+            //  il ignore qu'une structure s'y cache
+            // console.log(reponseServeur);
+
+            // Il faut reconvertir le texte brut en données au format JSON pour
+            // que sa structure soit comprise et traiter ainsi
+
+            var oJSON = JSON.parse(reponseServeur);
+            // console.log(oJSON);
+
+            // Mise en cache
+            cache.currentSuggestions = oJSON.suggestions;
+            cache.lastRequests[oJSON.debutNom] = oJSON.suggestions;
+            // console.log(cache);
+
+            var affichage = "";
+
+            for (i = 0; i < oJSON.suggestions.length; i++) {
+                affichage += "<li id='" + i + "'>"
+                    + oJSON.suggestions[i].prenom
+                    + " "
+                    + oJSON.suggestions[i].nom.substr(0, 1)
+                    + "."
+                    + "</li>"
+            }
+
+            html("suggestions", affichage);
+            show("suggestions");
+            hide("imgLoad");
+        }
+
+        function saisir() {
+            var texte = val("saisie");
+
+            // CACHE: On réutilise les suggestions mémorisées par traitement()
+            //  au lieu d'envoyer une nouvelle requête.            
+            // traitement() attend une chaîne JSON comme celle du serveur
+            // on reconstruit donc cette chaine avec JSON.stringify
+
+            if (cache.lastRequests[texte] !== undefined) {
+                console.log("Cache appelé pour: " + texte);
+                traitement(JSON.stringify({
+                    suggestions: cache.lastRequests[texte],
+                    debutNom: texte
+                }));
+                return; // pas d'appel du serveur
+            }
+
+            console.log("Serveur appelé pour: " + texte);
+            show("imgLoad");
+            hide("suggestions");
+            ajax({
+                // type: ,
+                url: "data_bdd.php",
+                data: { debutNom: texte },
+                callback: traitement
+            });
+        }
+
+        function choisir(contexte) {
+            // console.log(contexte.target);
+            var indiceCache = contexte.target.id;
+            var oMeta = cache.currentSuggestions[indiceCache];
+            var stringFinal = oMeta.prenom + " " + oMeta.nom.substr(0, 1) + ". ("
+                + oMeta.id + ")";
+
+            val("saisie", stringFinal);
+            // val("saisie", html(contexte.target));
+            hide("suggestions");
+        }
+
+        function annuler(contexte) {
+            if (contexte.code == "Escape") {
+                val("saisie", "");
+                hide("imgLoad");
+                hide("suggestions");
+            }
+        }
+    </script>
+
+    <style>
+        #conteneur {
+            position: relative;
+            display: inline;
+        }
+
+        #saisie {
+            width: 250px;
+            height: 30px;
+            padding-right: 20px;
+            outline: none;
+            border: 1px solid black;
+        }
+
+        #imgLoad {
+            position: absolute;
+            right: 7px;
+            top: 2px;
+            display: none;
+        }
+
+        #suggestions {
+            position: absolute;
+            border: 1px solid black;
+            border-top: 0;
+            padding: 0;
+            margin: 0;
+            left: 0;
+            width: 248px;
+            top: 25px;
+            display: none;
+        }
+
+        #suggestions li {
+            display: block;
+            padding: 3px;
+        }
+
+        #suggestions li:hover {
+            background-color: lightgrey;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body onkeyup="annuler(event);">
+    Bienvenue sur W2 suggest
+    <div id="conteneur">
+        <input type="text" id="saisie" onkeyup="saisir();" />
+        <img src="ressources/ajaxLoader.gif" id="imgLoad" />
+        <ul id="suggestions" onclick="choisir(event);">
+        </ul>
+    </div>
+</body>
